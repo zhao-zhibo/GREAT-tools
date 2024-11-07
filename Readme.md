@@ -240,7 +240,7 @@ The table below provides a detailed description of the observational environment
 <p align="center">Table 3. Data sequences</p> 
 <table>
     <tr>
-        <th rowspan=3 align="center">Dataset</th>
+        <th rowspan=3 align="center">Sequence</th>
         <th rowspan=3 align="center">Date</th>
         <th colspan=8 align="center">Environment</th>
         <th rowspan=3 align="center">Duration/(s)</th>
