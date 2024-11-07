@@ -39,7 +39,7 @@
 
 &ensp;&ensp;&ensp;If you face any problem when using this dataset, feel free to propose an issue. If you find the dataset useful for your research, we would appreciate it if you could give the project a star. For academic use of the GREAT Dataset, please cite:
 ~~~
-GREAT(GNSS+ REsearch, Application and Teaching) Group from SGG of Wuhan University, Nov. 2024, "GREAT Dataset:A vehicle-mounted multi-sensor raw observation dataset in complex urban environment.", [Online]. Available:
+GREAT(GNSS+ REsearch, Application and Teaching) Group from SGG of Wuhan University, Nov. 2024, "GREAT Dataset:A vehicle-mounted multi-sensor raw observation dataset in complex urban environment.", [Online]. Available:https://github.com/GREAT-WHU/GREAT-Dataset.git
 ~~~
 
 ## Sensor Setup
