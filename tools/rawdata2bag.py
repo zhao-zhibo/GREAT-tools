@@ -1,23 +1,10 @@
-#!env python
-# -*- coding: utf-8 -*-
-
 import sys
-#reload(sys)
-#sys.setdefaultencoding('utf8‘)
-
-#try:
-#    import pykitti
-#except ImportError as e:
-#    print('Could not load module \'pykitti\'. Please run `pip install pykitti`')
-#    sys.exit(1)
-
 import tf
 import os
 import cv2
 import rospy
 import rosbag
 import progressbar
-
 
 from tf2_msgs.msg import TFMessage
 from datetime import datetime
@@ -40,14 +27,8 @@ class raw:
 
         # Default image file extension is '.png'
         self.imtype = kwargs.get('imtype', 'png')
-
-        # Find all the data files
-        #self._get_file_lists()
-
-        # Pre-load data that isn't returned as a generator
-        #self._load_calib()
         self._load_timestamps()
-        #self._load_oxts()
+
     def _load_timestamps(self):
         """Load timestamps from file."""
         timestamp_file = os.path.join(
@@ -57,9 +38,6 @@ class raw:
         self.timestamps = []
         with open(timestamp_file, 'r') as f:
             for line in f.readlines():
-                # NB: datetime only supports microseconds, but KITTI timestamps
-                # give nanoseconds, so need to truncate last 4 characters to
-                # get rid of \n (counts as 1) and extra 3 digits
                 if line[0] == '#':
                     continue
                 data_list = line.split()
@@ -111,19 +89,14 @@ def save_camera_data(bag, whu_type, whu, bridge, camera, camera_frame_id, topic,
         image_dir = os.path.join(whu.data_path, 'img{}'.format(camera_pad))
         print(image_dir)
         image_path = os.path.join(image_dir, 'data')
-        #image_filenames= sorted(os.listdir(image_path))
         image_datetimes = []
         image_filenames = []
         img_time_path = os.path.join(image_dir, 'timestamps.txt')
         with open(img_time_path, 'r') as f: 
-            #a = -1      
             for line in f.readlines():               
                 line=line.rstrip("\r\n")
                 if line[0] == '#':
                     continue
-                #a = a+1
-                #if a % 2 != 0:
-                #    continue
 
                 line_list = line.split(',')
                 image_datetimes.append(int(line_list[0])/1e9)   
@@ -190,12 +163,9 @@ def save_velo_data(bag, whu, velo_frame_id, topic):
                   PointField('time', 18, PointField.FLOAT32, 1)]
         pcl_msg = pcl2.create_cloud(header, fields,scan)
         pcl_msg.is_dense = True
-        # print(pcl_msg)
 
         bag.write(topic, pcl_msg, t=pcl_msg.header.stamp)
-        # count += 1
-        # if count > 200:
-        #     break
+
 
 
 def save_gps_fix_data(bag, whu, gps_frame_id, topic):
@@ -268,14 +238,7 @@ if __name__ == "__main__":
 
     bridge = CvBridge()
     compression = rosbag.Compression.NONE
-    # compression = rosbag.Compression.BZ2
-    # compression = rosbag.Compression.LZ4
-    
-    # CAMERAS
-    #cameras = [
-    #    (0, 'camera_gray_left', '/img0_raw'),
-    #    (1, 'camera_gray_right', '/img1_raw')
-    #]
+
     cameras = [
         (0, 'camera_gray_left', '/img0_raw')        
     ]
@@ -298,7 +261,6 @@ if __name__ == "__main__":
             print('Dataset is empty? Exiting.')
             sys.exit(1)
 
-        #bag = rosbag.Bag("whu_{}_drive_{}_{}_{}.bag".format(args.date, args.scenario, args.number, args.whu_type[4:]), 'w', compression=compression)
         out_path = os.path.join(whu.data_path , "cp_night.bag")
         bag = rosbag.Bag(out_path, 'w', compression=compression)
         try:
@@ -311,8 +273,7 @@ if __name__ == "__main__":
             velo_frame_id = 'velodyne'
             velo_topic = '/points_raw'           
 
-            # Export  
-            #save_gps_fix_data(bag, whu, gps_frame_id, gps_fix_topic)          
+            # Export         
             save_imu_data_raw(bag, whu, imu_frame_id, imu_raw_topic)            
             for camera in cameras:
                 save_camera_data(bag, args.whu_type, whu, bridge, camera=camera[0], camera_frame_id=camera[1], topic=camera[2], initial_time=None)            
