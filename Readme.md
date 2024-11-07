@@ -27,19 +27,19 @@
 
 ## Introduction
 ### Abstract:
-&ensp;&ensp;&ensp;We propose the GREAT Dataset: a novel multi-sensor raw observation dataset collected from a vehicle-mounted platform in complex urban environments, featuring a high-precision multi-frequency GNSS receiver, a tactical-grade IMU, a MEMS IMU, two CMOS cameras, and a LiDAR. All of these sensors achieve hardware-level time synchronization and their spatiotemporal relationships are well calibrated. In this dataset, the bidirectional smoothed solutions of tightly coupled multi-GNSS RTK/tactical-IMU, solved by the commercial Inertial Explorer (IE) 8.9 software, are taken as the reference coordinates.  
+&ensp;&ensp;&ensp;We propose the GREAT Dataset: a novel multi-sensor raw observation dataset collected from a vehicle-mounted platform in complex urban environments, featuring a high-precision multi-frequency GNSS receiver, a tactical-grade IMU, a MEMS IMU, two CMOS cameras, and a LiDAR. All of these sensors achieve hardware-level time synchronization and their spatiotemporal relationships are well calibrated. In this dataset, the bidirectional smoothed solutions of tightly coupled multi-GNSS RTK/tactical-IMU, solved by the commercial Inertial Explorer (IE) 8.9 software, are taken as the reference solutions.  
 &ensp;&ensp;&ensp;The dataset comprises eight sequences that encompass environments within the campus of Wuhan University and the suburban periphery of the city. This dataset serves to evaluate the performance of various multi-sensor fusion navigation algorithms.
 ### Main Contributuions:
 * We provide a vehicle-mounted dataset that includes multi-frequency, multi-system GNSS raw observations, IMU measurements, camera images, and LiDAR scan data. The timestamps of all sensors have been unified to the GPS time system, via hardware synchronization.
-* We collected a variety of complex urban environment data, including campus environment data during the day and night, urban canyon, and suburban environment data. Diverse data sequences can facilitate a more comprehensive evaluation of the robustness and accuracy of SLAM algorithms.
-* We provide full-frequency, high-precision raw GNSS observations and high-accuracy inertial navigation measurements, which can benefit communication in research fields such as SLAM and satellite navigation that require precise positioning.
+* We collected data from various urban environments, including campus, urban canyon and suburban area. Diverse data sequences can facilitate a more comprehensive evaluation of the robustness and accuracy of SLAM algorithms.
+* We provide full-frequency, high-precision raw GNSS observations and high-accuracy inertial navigation measurements, which can benefit the communities of Robotics, SLAM, satellite navigation and other related fields.
 
 ## License
 &ensp;&ensp;&ensp;This work is licensed under MIT license. International License and is provided for academic purpose. If you are interested in our dataset for commercial purposes or collaborations, please contact us on xingkonggreat@163.com for further communication.  
 
 &ensp;&ensp;&ensp;If you face any problem when using this dataset, feel free to propose an issue. If you find the dataset useful for your research, we would appreciate it if you could give the project a star. For academic use of the GREAT Dataset, please cite:
 ~~~
-GREAT(GNSS+ REsearch, Application and Teaching) Group from SGG of Wuhan University, Nov. 2024, "GREAT Dataset:A vehicle-mounted multi-sensor raw observation dataset in complex urban environment.", [Online]. Available:https://github.com/GREAT-WHU/GREAT-Dataset.git
+GREAT(GNSS+ REsearch, Application and Teaching) Group from SGG of Wuhan University, Nov. 2024, "GREAT Dataset:A vehicle-mounted multi-sensor raw observation dataset in complex urban environment.", [Online]. Available: https://github.com/GREAT-WHU/GREAT-Dataset.git
 ~~~
 
 ## Sensor Setup
@@ -51,7 +51,7 @@ The equipment loading and external parameters of most sequences are shown in the
 ![Distribution of Sensor Installations on Vehicle 1](/figures/parameter1.png)
 <p align="center">Figure 2. Distribution of Sensor Installations on Vehicle 1</p>  
   
-Since the sensors were adjusted during the observation in 2022, the equipment loading and external parameters of urban-02 are shown in the following figures:
+Since some of the sensors were replaced in urban-02 dataset, the equipment loading and external parameters are shown in the following figures:
 ![Equipment Configuration 2](/figures/20221027.jpg)
 <p align="center">Figure 3. Equipment Configuration 2</p>  
 
