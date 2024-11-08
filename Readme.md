@@ -109,7 +109,7 @@ The table below summarizes the characteristics of the GREAT Dataset compared to 
     <tr>
         <th rowspan=3>Dataset</th>
         <th colspan=6 align="center">Sensors</th>
-        <th rowspan=3>Hard RT</th>
+        <th rowspan=3>Hardware Synchronization</th>
     </tr>
     <tr>
         <th colspan=2 align="center">GNSS</th>
@@ -388,7 +388,7 @@ You can download the IMU data、images and LiDAR data you need via the links in 
 | suburb-01 | [IMU.zip](https://1drv.ms/u/s!AmbluGSzG9avgWm2MEerirdwY88D?e=6aL2Ln) | [Image.zip](https://1drv.ms/u/s!AmbluGSzG9avlapkBnz7T-sx12BniQ?e=4tEolR) | [LiDAR.zip](https://1drv.ms/u/s!AmbluGSzG9avlapoLU8OEkMD_MZIZg?e=760oTd) | [reference solution](https://1drv.ms/t/s!AmbluGSzG9avggr0lpaTnLicuVKy?e=ewMqYq) |  
 | suburb-02 | [IMU.zip](https://1drv.ms/u/s!AmbluGSzG9avgWbSAj31IlUbceX2?e=zqLS3H) | [Image.zip](https://1drv.ms/u/s!AmbluGSzG9avhA861oq29LLkm6xX?e=JNRreg) | [LiDAR.zip](https://1drv.ms/u/s!AmbluGSzG9avhGPDtFuj5DF0RgBB?e=Y1NO58) | [reference solution](https://1drv.ms/t/s!AmbluGSzG9avggt3m6WhEXRW_DmQ?e=S5xAtg) |  
 | urban-01 | [IMU.zip](https://1drv.ms/u/s!AmbluGSzG9avgWhBOcvo59AH-yay?e=K2ejjm) | [Image.zip](https://1drv.ms/u/s!AmbluGSzG9avgYxe1283NU5WFo3S_g?e=fAthiK) | [LiDAR.zip](https://1drv.ms/u/s!AmbluGSzG9avgX1XdLOUEYrqoGND?e=XJxvO5) | [reference solution](https://1drv.ms/t/s!AmbluGSzG9avghS1t-lV5BDyOKic?e=JN3eer) |  
-| urban-02 | [IMU.zip](https://1drv.ms/u/s!AmbluGSzG9avgWukpJjo9h404F5D?e=Yfahv6) | [Image.zip](https://1drv.ms/u/s!AmbluGSzG9avgXvG_UZ0SbWuXDWz?e=jgqzFc) | [LiDAR.zip](https://1drv.ms/u/s!AmbluGSzG9avgqMiZ4u2pSJMNE4V3w?e=WIrHz1) | [reference solution](https://1drv.ms/t/s!AmbluGSzG9avgi7BWa9soqmJ0a-R?e=1hHScq) |  
+| urban-02 | [IMU.zip](https://1drv.ms/u/s!AmbluGSzG9avgWukpJjo9h404F5D?e=Yfahv6) | [Image.zip](https://1drv.ms/u/s!AmbluGSzG9avlapp3hXn-WUV3CsvsA?e=duCN5z) | [LiDAR.zip](https://1drv.ms/u/s!AmbluGSzG9avgqMiZ4u2pSJMNE4V3w?e=WIrHz1) | [reference solution](https://1drv.ms/t/s!AmbluGSzG9avgi7BWa9soqmJ0a-R?e=1hHScq) |  
 
 For raw GNSS observation data, visit:  [GNSS_RAW_DATA](https://1drv.ms/u/s!AmbluGSzG9avlapnkvHvjweaaDTh8Q?e=ebuRCg)    
 For sensor parameters, visit: [Extrinsic & Intrinsic Parameters](https://1drv.ms/u/s!AmbluGSzG9avlapl2q3l6pEvNygqVw?e=qQ1Trx)
@@ -451,4 +451,3 @@ We have plotted reference solution of each data set in Google Earth for easy com
 > | MEMS | Micro-Electro-Mechanical Systems |
 > | CMOS | Complementary Metal-Oxide-Semiconductor |
 > | LiDAR | Light Detection and Ranging |
-> | hard RT | Hard Real-Time |
