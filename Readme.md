@@ -373,7 +373,7 @@ The table below provides a detailed description of the observational environment
     </tr>
 </table>
 
-&ensp;&ensp;&ensp;Based on sensor observation conditions in each sequence's environment, we assessed the difficulty level of each sequence (with a total of three levels).
+&ensp;&ensp;&ensp;Based on sensor observation conditions in each sequence's environment, we assessed the difficulty level of each sequence (with a total of three levels), making it easier to evaluate the performance of SLAM algorithms.  
 
 ### Data Download
 You can download the IMU data、images and LiDAR data you need via the links in the following table.  
