@@ -373,7 +373,7 @@ The table below provides a detailed description of the observational environment
     </tr>
 </table>
 
-&ensp;&ensp;&ensp;Based on sensor observation conditions in each sequence's environment, we assessed the difficulty level of each sequence (with a total of three levels). Most sequences have a duration of over 10 minutes, making it easier to evaluate the performance of SLAM algorithms.  
+&ensp;&ensp;&ensp;Based on sensor observation conditions in each sequence's environment, we assessed the difficulty level of each sequence (with a total of three levels).
 
 ### Data Download
 You can download the IMU data、images and LiDAR data you need via the links in the following table.  
@@ -397,7 +397,7 @@ For sensor parameters, visit: [Extrinsic & Intrinsic Parameters](https://1drv.ms
 We have plotted reference solution of each data set in Google Earth for easy comparison. Figure 7 shows the summarized trajectories of the 8 data sets:
 ![reference solution 1](/figures/groundtruth.jpg)
 <p align="center">Figure 7. reference solution</p> 
-&ensp;&ensp;&ensp;Due to overlapping trajectories in some cases, it is difficult to see clearly on a single map. Therefore, we have also created individual trajectory maps for each data set, corresponding to Figures 2 to 8 (with the reference solutions of the two suburban environments plotted on one map):  
+&ensp;&ensp;&ensp;Due to overlapping trajectories in some cases, it is difficult to see clearly on a single map. Therefore, we have also created individual trajectory maps for each data set, corresponding to Figures 8 to 14 (with the reference solutions of the two suburban environments plotted on one map):  
 
 ![reference solution 2](/figures/campus01.jpg)
 <p align="center">Figure 8. campus-01 reference solution</p>  
