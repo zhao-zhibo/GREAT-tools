@@ -78,13 +78,13 @@ The table below presents detailed information about the various sensors utilized
         <th align="center">Tactical-Grade IMU</th>
         <td align="center">StarNeto XW-GI7660 </td>
         <td align="center">200 Hz</td>
-        <td align="center">Gyroscope bias:0.3 (°/h)<br>Accelerometer bias:100 mGal<br>Angle random walk:0.01(°/√h )</td>
+        <td align="center">Gyroscope bias: ≤ 0.5 (°/h)<br>Accelerometer bias: ≤ 100 mGal<br>Angle random walk: 0.01(°/√h )</td>
     </tr>
     <tr>
         <th align="center">MEMS-IMU</th>
         <td align="center">ADIS-16470</td>
         <td align="center">100 Hz</td>
-        <td align="center">Gyroscope bias:8 (°/h)<br>Accelerometer bias:1500 mGal<br>Angle random walk:0.34 (°/√h )<br>Speed random walk:0.037(m/s/√h )</td>
+        <td align="center">Gyroscope bias: 8 (°/h)<br>Accelerometer bias: 13 mGal<br>Angle random walk: 0.34 (°/√h )<br>Speed random walk: 0.037(m/s/√h )</td>
     </tr>
     <tr>
         <th align="center">Camera</th>
