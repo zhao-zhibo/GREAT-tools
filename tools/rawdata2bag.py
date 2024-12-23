@@ -31,8 +31,7 @@ class raw:
 
     def _load_timestamps(self):
         """Load timestamps from file."""
-        timestamp_file = os.path.join(
-            self.data_path, 'imu', 'imu.txt')
+        timestamp_file = os.path.join(self.data_path, 'IMU', 'MEMS_imu_data.txt')
 
         # Read and parse the timestamps
         self.timestamps = []
@@ -52,8 +51,8 @@ class raw:
 def save_imu_data_raw(bag, whu, imu_frame_id, topic):
     print("Exporting IMU Raw")
     synced_path = whu.data_path    
-    imu_path = os.path.join(synced_path, 'imu')
-    imu_data_path = os.path.join(imu_path, 'imu.txt')
+    imu_path = os.path.join(synced_path, 'IMU')
+    imu_data_path = os.path.join(imu_path, 'MEMS_imu_data.txt')
     imu_data = []
     with open(imu_data_path, 'r') as f:       
         for line in f.readlines():               
@@ -123,7 +122,7 @@ def save_camera_data(bag, whu_type, whu, bridge, camera, camera_frame_id, topic,
         
 def save_velo_data(bag, whu, velo_frame_id, topic):
     print("Exporting velodyne data")
-    velo_path = os.path.join(whu.data_path, 'laser_new')
+    velo_path = os.path.join(whu.data_path, 'Lidar')
     velo_data_dir = os.path.join(velo_path, 'data')    
     velo_time_path = os.path.join(velo_path, 'timestamps.txt')
     velo_datetimes = []
@@ -134,7 +133,7 @@ def save_velo_data(bag, whu, velo_frame_id, topic):
             if line[0] == '#':
                 continue       
             line_list = line.split(',')
-            velo_datetimes.append(int(line_list[0])/1e9)  
+            velo_datetimes.append(float(line_list[0])/1e9)
             velo_filenames.append(line_list[1])          
 
     iterable = zip(velo_datetimes, velo_filenames)
@@ -261,7 +260,7 @@ if __name__ == "__main__":
             print('Dataset is empty? Exiting.')
             sys.exit(1)
 
-        out_path = os.path.join(whu.data_path , "cp_night.bag")
+        out_path = os.path.join(whu.data_path , "campus-01.bag")
         bag = rosbag.Bag(out_path, 'w', compression=compression)
         try:
             # IMU
@@ -275,8 +274,8 @@ if __name__ == "__main__":
 
             # Export         
             save_imu_data_raw(bag, whu, imu_frame_id, imu_raw_topic)            
-            for camera in cameras:
-                save_camera_data(bag, args.whu_type, whu, bridge, camera=camera[0], camera_frame_id=camera[1], topic=camera[2], initial_time=None)            
+            # for camera in cameras:
+            #     save_camera_data(bag, args.whu_type, whu, bridge, camera=camera[0], camera_frame_id=camera[1], topic=camera[2], initial_time=None)
             save_velo_data(bag, whu, velo_frame_id, velo_topic)
             
         finally:
