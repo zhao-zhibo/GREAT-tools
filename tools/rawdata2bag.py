@@ -31,7 +31,7 @@ class raw:
 
     def _load_timestamps(self):
         """Load timestamps from file."""
-        timestamp_file = os.path.join(self.data_path, 'IMU', 'MEMS_imu_data.txt')
+        timestamp_file = os.path.join(self.data_path, 'IMU', 'Tactical_imu_data.txt')
 
         # Read and parse the timestamps
         self.timestamps = []
@@ -52,7 +52,7 @@ def save_imu_data_raw(bag, whu, imu_frame_id, topic):
     print("Exporting IMU Raw")
     synced_path = whu.data_path    
     imu_path = os.path.join(synced_path, 'IMU')
-    imu_data_path = os.path.join(imu_path, 'MEMS_imu_data.txt')
+    imu_data_path = os.path.join(imu_path, 'Tactical_imu_data.txt')
     imu_data = []
     with open(imu_data_path, 'r') as f:       
         for line in f.readlines():               
@@ -133,7 +133,7 @@ def save_velo_data(bag, whu, velo_frame_id, topic):
             if line[0] == '#':
                 continue       
             line_list = line.split(',')
-            velo_datetimes.append(float(line_list[0])/1e9)
+            velo_datetimes.append(float(line_list[0]))
             velo_filenames.append(line_list[1])          
 
     iterable = zip(velo_datetimes, velo_filenames)
