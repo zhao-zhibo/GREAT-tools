@@ -4,7 +4,7 @@
 1. Introduction  
  &ensp;* Abstract  
  &ensp;* Main Contributions  
-
+转格式的py文件入参：`raw_synced /media/**  -n suburb-02`
 2. Lisence  
 
 3. Sensor Setup  
