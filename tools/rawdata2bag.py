@@ -16,6 +16,10 @@ from cv_bridge import CvBridge
 import numpy as np
 import argparse
 
+def should_process_timestamp(timestamp):
+    # return timestamp >= 22451   # 22451 is the first timestamp in urban-02 data，因为urban2数据集中的imu和image第一个时间戳是22451，可是lidar却是非常靠前的时间戳
+    return True
+
 class raw:
     """Load and parse raw data into a usable format."""
 
@@ -66,6 +70,8 @@ def save_imu_data_raw(bag, whu, imu_frame_id, topic):
         data = data_line[0].split()                
         imu = Imu()
         timestamp = float(data[0])
+        if not should_process_timestamp(timestamp):
+            continue
         imu.header.frame_id = imu_frame_id
         imu.header.stamp = rospy.Time.from_sec(timestamp)            
         imu.linear_acceleration.x = float(data[4])
@@ -85,7 +91,7 @@ def save_camera_data(bag, whu_type, whu, bridge, camera, camera_frame_id, topic,
     print("Exporting camera {}".format(camera))
     if whu_type.find("raw") != -1:
         camera_pad = '{0:01d}'.format(camera)
-        image_dir = os.path.join(whu.data_path, 'img{}'.format(camera_pad))
+        image_dir = os.path.join(whu.data_path, 'Image/','img{}'.format(camera_pad))
         print(image_dir)
         image_path = os.path.join(image_dir, 'data')
         image_datetimes = []
@@ -99,13 +105,15 @@ def save_camera_data(bag, whu_type, whu, bridge, camera, camera_frame_id, topic,
 
                 line_list = line.split(',')
                 # 确认一下这个时间戳是不是对的，如果不对，不需要除以1e9，并且应该是float类型
-                image_datetimes.append(int(line_list[0])/1e9)   
+                image_datetimes.append(float(line_list[0]))
                 image_filenames.append(line_list[1])          
                 
     
     iterable = zip(image_datetimes, image_filenames)
     bar = progressbar.ProgressBar()
     for dt, filename in bar(iterable):
+        if not should_process_timestamp(dt):
+            continue
         image_filename = os.path.join(image_path, filename)
         cv_image = cv2.imread(image_filename)
         
@@ -142,7 +150,9 @@ def save_velo_data(bag, whu, velo_frame_id, topic):
     count = 0
     for dt, filename in bar(iterable):
         if dt is None:
-            continue        
+            continue
+        if not should_process_timestamp(dt):
+            continue
         velo_filename = os.path.join(velo_data_dir, filename)
         velo_filename = velo_filename.strip()
         
@@ -261,7 +271,7 @@ if __name__ == "__main__":
             print('Dataset is empty? Exiting.')
             sys.exit(1)
 
-        out_path = os.path.join(whu.data_path , "urban-02.bag")
+        out_path = os.path.join(whu.data_path , args.name + ".bag")
         bag = rosbag.Bag(out_path, 'w', compression=compression)
         try:
             # IMU
@@ -274,7 +284,7 @@ if __name__ == "__main__":
             velo_topic = '/points_raw'           
 
             # Export         
-            save_imu_data_raw(bag, whu, imu_frame_id, imu_raw_topic)            
+            save_imu_data_raw(bag, whu, imu_frame_id, imu_raw_topic)
             for camera in cameras:
                 save_camera_data(bag, args.whu_type, whu, bridge, camera=camera[0], camera_frame_id=camera[1], topic=camera[2], initial_time=None)
             save_velo_data(bag, whu, velo_frame_id, velo_topic)
