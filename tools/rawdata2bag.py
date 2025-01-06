@@ -17,7 +17,8 @@ import numpy as np
 import argparse
 
 def should_process_timestamp(timestamp):
-    # return timestamp >= 22451   # 22451 is the first timestamp in urban-02 data，因为urban2数据集中的imu和image第一个时间戳是22451，可是lidar却是非常靠前的时间戳
+    # return timestamp >= 22451    # 22451 is the first timestamp in urban-02 data，因为urban2数据集中的imu和image第一个时间戳是22451，可是lidar却是非常靠前的时间戳
+    # return 22451 + 550 + 13 <= timestamp <= 22451 + 750
     return True
 
 class raw:
@@ -25,7 +26,7 @@ class raw:
 
     def __init__(self, base_path, filename, **kwargs):
         """Set the path and pre-load calibration data and timestamps."""
-        self.dataset = kwargs.get('dataset', 'extract')        
+        self.dataset = kwargs.get('dataset', 'extract')
         self.data_path = os.path.join(base_path, filename)
         self.frames = kwargs.get('frames', None)
 
@@ -54,26 +55,26 @@ class raw:
 
 def save_imu_data_raw(bag, whu, imu_frame_id, topic):
     print("Exporting IMU Raw")
-    synced_path = whu.data_path    
+    synced_path = whu.data_path
     imu_path = os.path.join(synced_path, 'IMU')
     imu_data_path = os.path.join(imu_path, 'MEMS_imu_data.txt')
     imu_data = []
-    with open(imu_data_path, 'r') as f:       
-        for line in f.readlines():               
+    with open(imu_data_path, 'r') as f:
+        for line in f.readlines():
             if line[0] == '#' or 'ime' in line:
                 continue
-            imu_data.append(line)    
+            imu_data.append(line)
 
-    iterable = zip(imu_data)      
+    iterable = zip(imu_data)
     bar = progressbar.ProgressBar()
     for data_line in bar(iterable):
-        data = data_line[0].split()                
+        data = data_line[0].split()
         imu = Imu()
         timestamp = float(data[0])
         if not should_process_timestamp(timestamp):
             continue
         imu.header.frame_id = imu_frame_id
-        imu.header.stamp = rospy.Time.from_sec(timestamp)            
+        imu.header.stamp = rospy.Time.from_sec(timestamp)
         imu.linear_acceleration.x = float(data[4])
         imu.linear_acceleration.y = float(data[5])
         imu.linear_acceleration.z = float(data[6])
@@ -84,8 +85,8 @@ def save_imu_data_raw(bag, whu, imu_frame_id, topic):
         imu.orientation.y = float(0.0)
         imu.orientation.z = float(0.0)
         imu.orientation.w = float(1.0)
-        bag.write(topic, imu, t=imu.header.stamp)   
-                
+        bag.write(topic, imu, t=imu.header.stamp)
+
 
 def save_camera_data(bag, whu_type, whu, bridge, camera, camera_frame_id, topic, initial_time):
     print("Exporting camera {}".format(camera))
@@ -97,8 +98,8 @@ def save_camera_data(bag, whu_type, whu, bridge, camera, camera_frame_id, topic,
         image_datetimes = []
         image_filenames = []
         img_time_path = os.path.join(image_dir, 'timestamps.txt')
-        with open(img_time_path, 'r') as f: 
-            for line in f.readlines():               
+        with open(img_time_path, 'r') as f:
+            for line in f.readlines():
                 line=line.rstrip("\r\n")
                 if line[0] == '#' or 'ime' in line:
                     continue
@@ -106,9 +107,9 @@ def save_camera_data(bag, whu_type, whu, bridge, camera, camera_frame_id, topic,
                 line_list = line.split(',')
                 # 确认一下这个时间戳是不是对的，如果不对，不需要除以1e9，并且应该是float类型
                 image_datetimes.append(float(line_list[0]))
-                image_filenames.append(line_list[1])          
-                
-    
+                image_filenames.append(line_list[1])
+
+
     iterable = zip(image_datetimes, image_filenames)
     bar = progressbar.ProgressBar()
     for dt, filename in bar(iterable):
@@ -116,34 +117,34 @@ def save_camera_data(bag, whu_type, whu, bridge, camera, camera_frame_id, topic,
             continue
         image_filename = os.path.join(image_path, filename)
         cv_image = cv2.imread(image_filename)
-        
+
         if camera in (0, 1):
             cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
         encoding = "mono8" if camera in (0, 1) else "bgr8"
         image_message = bridge.cv2_to_imgmsg(cv_image, encoding=encoding)
         image_message.header.frame_id = camera_frame_id
         if whu_type.find("raw") != -1:
-            image_message.header.stamp =  rospy.Time.from_sec(dt)                 
-            topic_ext = "/image_raw"       
-        
+            image_message.header.stamp =  rospy.Time.from_sec(dt)
+            topic_ext = "/image_raw"
+
         bag.write(topic, image_message, t = image_message.header.stamp)
-        
-        
+
+
 def save_velo_data(bag, whu, velo_frame_id, topic):
     print("Exporting velodyne data")
     velo_path = os.path.join(whu.data_path, 'Lidar')
-    velo_data_dir = os.path.join(velo_path, 'data')    
+    velo_data_dir = os.path.join(velo_path, 'data')
     velo_time_path = os.path.join(velo_path, 'timestamps.txt')
     velo_datetimes = []
     velo_filenames = []
-    with open(velo_time_path,'r') as f:       
+    with open(velo_time_path,'r') as f:
         for line in f.readlines():
             line=line.rstrip("\r\n")
             if line[0] == '#' or 'ime' in line:
-                continue       
+                continue
             line_list = line.split(',')
             velo_datetimes.append(float(line_list[0]))
-            velo_filenames.append(line_list[1])          
+            velo_filenames.append(line_list[1])
 
     iterable = zip(velo_datetimes, velo_filenames)
     bar = progressbar.ProgressBar()
@@ -155,10 +156,10 @@ def save_velo_data(bag, whu, velo_frame_id, topic):
             continue
         velo_filename = os.path.join(velo_data_dir, filename)
         velo_filename = velo_filename.strip()
-        
+
         # read binary data
         npdt = np.dtype([('x', np.float32), ('y', np.float32),('z', np.float32),('intensity', np.float32),('ring', np.uint16),('time', np.float32)])
-        scan = (np.fromfile(velo_filename, dtype=npdt))       
+        scan = (np.fromfile(velo_filename, dtype=npdt))
         # create header
         header = Header()
         header.frame_id = velo_frame_id
@@ -180,27 +181,27 @@ def save_velo_data(bag, whu, velo_frame_id, topic):
 
 def save_gps_fix_data(bag, whu, gps_frame_id, topic):
     print("Exporting GNSS data")
-    synced_path = whu.data_path    
+    synced_path = whu.data_path
     gnss_path = os.path.join(synced_path, 'GNSS')
     gnss_data_path = os.path.join(gnss_path, 'gnss.pos')
     gnss_data = []
-    with open(gnss_data_path, 'r') as f:       
-        for line in f.readlines():               
+    with open(gnss_data_path, 'r') as f:
+        for line in f.readlines():
             if line[0] == '#' or 'ime' in line:
                 continue
-            gnss_data.append(line)    
+            gnss_data.append(line)
 
-    iterable = zip(gnss_data)      
+    iterable = zip(gnss_data)
     bar = progressbar.ProgressBar()
     i_count = 0
     for data_line in bar(iterable):
-        data = data_line[0].split('\t')                
+        data = data_line[0].split('\t')
         navsatfix_msg = NavSatFix()
         i_count = i_count+1
         timestamp = float(data[0])
-        navsatfix_msg.header.seq = i_count 
+        navsatfix_msg.header.seq = i_count
         navsatfix_msg.header.frame_id = gps_frame_id
-        navsatfix_msg.header.stamp = rospy.Time.from_sec(timestamp)    
+        navsatfix_msg.header.stamp = rospy.Time.from_sec(timestamp)
         navsatfix_msg.latitude = float(data[1])
         navsatfix_msg.longitude = float(data[2])
         navsatfix_msg.altitude = float(data[3])
@@ -216,10 +217,10 @@ def save_gps_fix_data(bag, whu, gps_frame_id, topic):
         navsatfix_msg.position_covariance[5]=0.0
         navsatfix_msg.position_covariance[6]=0.0
         navsatfix_msg.position_covariance[7]=0.0
-        navsatfix_msg.position_covariance[8]=float(data[6])*float(data[6])    
-        navsatfix_msg.position_covariance_type = 2 
+        navsatfix_msg.position_covariance[8]=float(data[6])*float(data[6])
+        navsatfix_msg.position_covariance_type = 2
         bag.write(topic, navsatfix_msg, t=navsatfix_msg.header.stamp)
-   
+
 
 
 def save_gps_vel_data(bag, whu, gps_frame_id, topic):
@@ -237,31 +238,32 @@ def save_gps_vel_data(bag, whu, gps_frame_id, topic):
 
 
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser(description = "Convert WHU dataset to ROS bag file the easy way!")
     # Accepted argument values
-    whu_types = ["raw_synced"]    
+    whu_types = ["raw_synced"]
     parser.add_argument("whu_type", choices = whu_types, help = "whu dataset type")
-    parser.add_argument("dir", nargs = "?", default = os.getcwd(), help = "base directory of the dataset, if no directory passed the deafult is current working directory")   
-    parser.add_argument("-n", "--name", help = "raw rata dir name")    
+    parser.add_argument("dir", nargs = "?", default = os.getcwd(), help = "base directory of the dataset, if no directory passed the deafult is current working directory")
+    parser.add_argument("-n", "--name", help = "raw rata dir name")
     args = parser.parse_args()
 
     bridge = CvBridge()
     compression = rosbag.Compression.NONE
 
     cameras = [
-        (0, 'camera_gray_left', '/img0_raw')        
+        (0, 'camera_gray_left', '/img0_raw'),
+        (1, 'camera_gray_right', '/img1_raw')
     ]
 
     if args.whu_type.find("raw") != -1:
-    
+
         if args.name == None:
             print("raw data file is not given.")
             print("Usage for raw dataset: rawdata2bag raw_synced [dir]  -n <raw data dir name>")
             sys.exit(1)
-       
-            
-        
+
+
+
         whu =raw(args.dir, args.name)
         if not os.path.exists(whu.data_path):
             print('Path {} does not exists. Exiting.'.format(whu.data_path))
@@ -275,23 +277,23 @@ if __name__ == "__main__":
         bag = rosbag.Bag(out_path, 'w', compression=compression)
         try:
             # IMU
-            imu_frame_id = 'imu_link'            
+            imu_frame_id = 'imu_link'
             imu_raw_topic = '/imu_raw'
             gps_frame_id = 'ECEF'
             gps_fix_topic = '/gnss0'
             gps_vel_topic = '/gps/vel'
             velo_frame_id = 'velodyne'
-            velo_topic = '/points_raw'           
+            velo_topic = '/points_raw'
 
-            # Export         
+            # Export
             save_imu_data_raw(bag, whu, imu_frame_id, imu_raw_topic)
             for camera in cameras:
                 save_camera_data(bag, args.whu_type, whu, bridge, camera=camera[0], camera_frame_id=camera[1], topic=camera[2], initial_time=None)
             save_velo_data(bag, whu, velo_frame_id, velo_topic)
-            
+
         finally:
             print("## OVERVIEW ##")
             print(bag)
             bag.close()
-            
-    
+
+
