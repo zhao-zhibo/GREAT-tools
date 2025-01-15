@@ -33,8 +33,8 @@ import open3d as o3d
 
 
 # Example usage
-input_file = '/media/zhao/ZhaoZhibo/AllData/CalibrationData/LiDAR_and_Cam/1735873701559421184.bin'
-output_file = '/media/zhao/ZhaoZhibo/AllData/CalibrationData/LiDAR_and_Cam/443333900000000.pcd'
+input_file = '/home/zhao/Codes/Calibration/SensorsCalibration/src/SensorsCalibration/lidar2camera/manual_calib/data/GREAT_01114_02/1736846217147320064.bin'
+output_file = '/home/zhao/Codes/Calibration/SensorsCalibration/src/SensorsCalibration/lidar2camera/manual_calib/data/GREAT_01114_02/206253600000000.pcd'
 
 def load_bin(file_path):
     pointcloud = np.fromfile(file_path, dtype=np.float32).reshape(-1, 4)
