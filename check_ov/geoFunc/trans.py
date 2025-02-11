@@ -2,6 +2,9 @@ import math
 from . import const_value
 import numpy as np
 
+#cart的定义是直角坐标系
+
+# cart2geod 是用来将地心直角坐标系 (ECEF) 的坐标转换为大地坐标 (经度、纬度、高度)。
 def cart2geod(Xinput):
     X=Xinput[0]
     Y=Xinput[1]

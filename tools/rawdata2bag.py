@@ -19,6 +19,7 @@ import argparse
 def should_process_timestamp(timestamp):
     # return timestamp >= 22451    # 22451 is the first timestamp in urban-02 data，因为urban2数据集中的imu和image第一个时间戳是22451，可是lidar却是非常靠前的时间戳
     # return 22451 + 550 + 13 <= timestamp <= 22451 + 750
+    # return 180589 <= timestamp <= 180589 + 5
     return True
 
 class raw:
@@ -182,12 +183,12 @@ def save_velo_data(bag, whu, velo_frame_id, topic):
 def save_gps_fix_data(bag, whu, gps_frame_id, topic):
     print("Exporting GNSS data")
     synced_path = whu.data_path
-    gnss_path = os.path.join(synced_path, 'GNSS')
-    gnss_data_path = os.path.join(gnss_path, 'gnss.pos')
+    gnss_path = os.path.join(synced_path)
+    gnss_data_path = os.path.join(gnss_path, 'groundtruth.txt')
     gnss_data = []
     with open(gnss_data_path, 'r') as f:
         for line in f.readlines():
-            if line[0] == '#' or 'ime' in line:
+            if line[0] == '#' or 'eek' in line:
                 continue
             gnss_data.append(line)
 
@@ -195,29 +196,31 @@ def save_gps_fix_data(bag, whu, gps_frame_id, topic):
     bar = progressbar.ProgressBar()
     i_count = 0
     for data_line in bar(iterable):
-        data = data_line[0].split('\t')
+        data = data_line[0].split()
         navsatfix_msg = NavSatFix()
         i_count = i_count+1
-        timestamp = float(data[0])
+        timestamp = float(data[1])
+        if not should_process_timestamp(timestamp):
+            continue
         navsatfix_msg.header.seq = i_count
         navsatfix_msg.header.frame_id = gps_frame_id
         navsatfix_msg.header.stamp = rospy.Time.from_sec(timestamp)
-        navsatfix_msg.latitude = float(data[1])
-        navsatfix_msg.longitude = float(data[2])
-        navsatfix_msg.altitude = float(data[3])
-        if data[7].strip() == "Fixed":
+        navsatfix_msg.latitude = float(data[5]) + float(data[6])/60 + float(data[7])/3600
+        navsatfix_msg.longitude = float(data[8]) + float(data[9])/60 + float(data[10])/3600
+        navsatfix_msg.altitude = float(data[11])
+        if data[24].strip() == "Fixed":
             navsatfix_msg.status.status = 1
         else:
             navsatfix_msg.status.status= -1
-        navsatfix_msg.position_covariance[0]=float(data[4])*float(data[4])
+        navsatfix_msg.position_covariance[0]=float(data[15])
         navsatfix_msg.position_covariance[1]=0.0
         navsatfix_msg.position_covariance[2]=0.0
         navsatfix_msg.position_covariance[3]=0.0
-        navsatfix_msg.position_covariance[4]=float(data[5])*float(data[5])
+        navsatfix_msg.position_covariance[4]=float(data[16])
         navsatfix_msg.position_covariance[5]=0.0
         navsatfix_msg.position_covariance[6]=0.0
         navsatfix_msg.position_covariance[7]=0.0
-        navsatfix_msg.position_covariance[8]=float(data[6])*float(data[6])
+        navsatfix_msg.position_covariance[8]=float(data[17])
         navsatfix_msg.position_covariance_type = 2
         bag.write(topic, navsatfix_msg, t=navsatfix_msg.header.stamp)
 
@@ -251,7 +254,7 @@ if __name__ == "__main__":
     compression = rosbag.Compression.NONE
 
     cameras = [
-        (0, 'camera_gray_left', '/img0_raw'),
+        # (0, 'camera_gray_left', '/img0_raw'),
         (1, 'camera_gray_right', '/img1_raw')
     ]
 
@@ -273,7 +276,7 @@ if __name__ == "__main__":
             print('Dataset is empty? Exiting.')
             sys.exit(1)
 
-        out_path = os.path.join(whu.data_path , args.name + ".bag")
+        out_path = os.path.join(whu.data_path , args.name + "mems_all.bag")
         bag = rosbag.Bag(out_path, 'w', compression=compression)
         try:
             # IMU
@@ -290,6 +293,7 @@ if __name__ == "__main__":
             for camera in cameras:
                 save_camera_data(bag, args.whu_type, whu, bridge, camera=camera[0], camera_frame_id=camera[1], topic=camera[2], initial_time=None)
             save_velo_data(bag, whu, velo_frame_id, velo_topic)
+            save_gps_fix_data(bag, whu, gps_frame_id, gps_fix_topic)
 
         finally:
             print("## OVERVIEW ##")
