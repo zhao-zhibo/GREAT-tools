@@ -12,6 +12,7 @@ def loadIE(path : str, all_data : dict, Ti0i1 : np.ndarray, ref_xyz : np.ndarray
     else:
         is_ref_set = True
         Ten0 = np.eye(4,4)
+        # n frame  to e frame
         Ten0[0:3,0:3] = trans.Cen(ref_xyz)
         Ten0[0:3,3] = ref_xyz
 
@@ -37,7 +38,7 @@ def loadIE(path : str, all_data : dict, Ti0i1 : np.ndarray, ref_xyz : np.ndarray
         ani0 = [all_data[sod]['ATTX0']/180*math.pi,\
                 all_data[sod]['ATTY0']/180*math.pi,\
                 all_data[sod]['ATTZ0']/180*math.pi]
-        Rni0 = trans.att2m(ani0)
+        Rni0 = trans.att2m(ani0) # 旋转矩阵 从i系到n系
         Rni1 = np.matmul(Rni0,Ti0i1[0:3,0:3])
         Rei1 = np.matmul(Ren,Rni1)
         tei0 = np.array([all_data[sod]['X0'],all_data[sod]['Y0'],all_data[sod]['Z0']])

@@ -120,6 +120,7 @@ def hhmmss2sec(hhmmss):
     sec = float(elem[0])*3600+float(elem[1])*60+float(elem[2])
     return sec
 
+# 传入ECEF坐标，返回Cen，也就是n frame to e frame的旋转矩阵
 def Cen(X):
     dtr=const_value.pi/180
 
