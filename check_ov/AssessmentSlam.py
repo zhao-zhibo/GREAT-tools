@@ -42,15 +42,15 @@ def loadIE(path : str, all_data : dict, Ti0i1 : np.ndarray, ref_xyz : np.ndarray
         ani0 = [all_data[sod]['ATTX0']/180*math.pi,\
                 all_data[sod]['ATTY0']/180*math.pi,\
                 all_data[sod]['ATTZ0']/180*math.pi]
-        Rni0 = trans.att2m(ani0) # 旋转矩阵 从i0系到n系
+        Rni0 = trans.att2m(ani0) # 旋转矩阵 ,大惯导 frame to n frame
 
         # 接下来将得到的真值(i0)转换到i1系下，因为本身的真值结果是在大惯导坐标系下(i0为大惯导坐标系)。
-        Rni1 = np.matmul(Rni0,Ti0i1[0:3,0:3]) # 得到i1传感器在n系下的姿态，也就是i1 frame to n frame
-        Rei1 = np.matmul(Ren,Rni1) # 得到i1传感器在e系下的姿态，也就是i1 frame to e frame
+        Rni1 = np.matmul(Rni0,Ti0i1[0:3,0:3]) # 得到lidar frame to n frame的旋转矩阵
+        Rei1 = np.matmul(Ren,Rni1) # 得到i1传感器在e系下的姿态，也就是lidar frame to e frame的旋转矩阵
 
-        tei0 = np.array([all_data[sod]['X0'],all_data[sod]['Y0'],all_data[sod]['Z0']])
-        tei1 = tei0 + Ren @ Rni0 @ Ti0i1[0:3,3]
-        # 最终得到i1传感器在e系下的位姿
+        tei0 = np.array([all_data[sod]['X0'],all_data[sod]['Y0'],all_data[sod]['Z0']]) # 大惯导在e系下的位置
+        tei1 = tei0 + Ren @ Rni0 @ Ti0i1[0:3,3] # 得到lidar在e系下的位置
+        # 最终得到lidar frame to e frame的变换矩阵
         Tei1 = np.eye(4,4)
         Tei1[0:3,0:3] = Rei1
         Tei1[0:3,3] = tei1
@@ -63,7 +63,7 @@ def loadIE(path : str, all_data : dict, Ti0i1 : np.ndarray, ref_xyz : np.ndarray
             Ten0[0:3,3] = tei1
         # 计算i1传感器在n系下的位姿，Ten0是n系到e系的变换矩阵，因此需要求逆
         Tni1 = np.matmul(np.linalg.inv(Ten0),Tei1)
-        all_data[sod]['T'] = Tni1 # i1 frame to n frame,i1 frame 为lidar frame
+        all_data[sod]['T'] = Tni1 # lidar frame to n frame的变换矩阵
 
     fp.close()
     return all_data
@@ -86,10 +86,6 @@ def interpolate_SE3(timeGroudTruth, SE3GroudTruth, timeCalc):
     rotations = R.from_matrix(SE3_groudTruth[:, :3, :3])
     slerp = Slerp(time_groudTruth, rotations)
 
-    print(f"time_calc.shape: {time_calc.shape}, time_calc.ndim: {time_calc.ndim}")
-    print(f"time_groudTruth.shape: {time_groudTruth.shape}, time_groudTruth.ndim: {time_groudTruth.ndim}")
-    print(f"SE3_groudTruth.shape: {SE3_groudTruth.shape}, SE3_groudTruth.ndim: {SE3_groudTruth.ndim}")
-
     for idx, t in enumerate(time_calc):
         # 处理边界
         t1_idx = np.searchsorted(time_groudTruth, t, side='right') - 1
@@ -100,7 +96,6 @@ def interpolate_SE3(timeGroudTruth, SE3GroudTruth, timeCalc):
         T1, T2 = SE3_groudTruth[t1_idx], SE3_groudTruth[t2_idx]
 
         # 平移插值
-
         if np.isscalar(t) and np.isscalar(t1) and np.isscalar(t2):
             alpha = (t - t1) / (t2 - t1) if t2 != t1 else 0.0
         else:
@@ -119,12 +114,22 @@ def interpolate_SE3(timeGroudTruth, SE3GroudTruth, timeCalc):
     return interp_results
 
 def main():
+    # 原始变换矩阵
     Ti0i1 = np.array([
         [0.9997326730750637, -0.02272959144087399, -0.004274982985153601, 0.03],
         [0.022705545174019435, 0.9997263893640309, -0.0055991346006956004, 0.48],
         [0.00440108045844036, 0.0055005630583402, 0.9999748924543965, 0.33],
         [0.0, 0.0, 0.0, 1.0]
     ])
+    rotation_matrix = Ti0i1[:3, :3]
+    euler_angles = R.from_matrix(rotation_matrix).as_euler('xyz', degrees=True)
+    print(f"Roll: {euler_angles[0]}, Pitch: {euler_angles[1]}, Yaw: {euler_angles[2]}")
+    euler_angles[2] += -2.8     # 调整yaw
+    euler_angles[1] += -2.0     # 调整pitch
+    euler_angles[0] += -0.0     # 调整roll
+
+    new_rotation_matrix = R.from_euler('xyz', euler_angles, degrees=True).as_matrix()
+    Ti0i1[:3, :3] = new_rotation_matrix
 
     all_data = {}
     ref_xyz = np.array([-2252007.546, 5024414.292, 3208592.422])  # 示例参考坐标 382122.520时间位置的ECEF坐标
@@ -148,7 +153,6 @@ def main():
     specificTnl = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, [config.reference_timestamp])
     # 获取真值中的最大时间
     max_ground_truth_time = max(groundTruthTimestamps)
-
     # slamTll表示激光slam的位姿是相对于某个时刻的位姿(非初始时刻)，是lidar与lidar之间的变换矩阵
     for timestamp, slamTll in SlamResult:
         if timestamp <= max_ground_truth_time:
@@ -158,5 +162,8 @@ def main():
     # 因为计算的结果的时间和真值时间不对齐，因此对位置线性内插，姿态四元数内插
     interpolatedGroundTruth = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, slamTimestamps)
     plotResult.compare_slam_and_ground_truth(slamTransforMatrix, interpolatedGroundTruth)
+    print("-" * 50)
+    plotResult.evo_trajectories(slamTransforMatrix, interpolatedGroundTruth)
+
 if __name__ == "__main__":
         main()

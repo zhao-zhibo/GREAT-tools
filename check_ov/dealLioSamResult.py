@@ -38,7 +38,7 @@ def process_tum_data(data, reference_timestamp):
     transformed_data = []
     for timestamp, position, quaternion in data:
         transformation_matrix = create_transformation_matrix(position, quaternion)
-        new_transformation_matrix = np.dot(np.linalg.inv(reference_matrix),transformation_matrix)
+        new_transformation_matrix = np.linalg.inv(reference_matrix) @ transformation_matrix
         transformed_data.append((timestamp, new_transformation_matrix))
 
     return transformed_data
