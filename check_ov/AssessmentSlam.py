@@ -123,17 +123,30 @@ def main():
     ])
     rotation_matrix = Ti0i1[:3, :3]
     euler_angles = R.from_matrix(rotation_matrix).as_euler('xyz', degrees=True)
-    print(f"Roll: {euler_angles[0]}, Pitch: {euler_angles[1]}, Yaw: {euler_angles[2]}")
-    euler_angles[2] += -2.8     # 调整yaw
-    euler_angles[1] += -2.0     # 调整pitch
-    euler_angles[0] += -0.0     # 调整roll
+    print(f"Roll: {euler_angles[0]}, Pitch: {euler_angles[1]}, Yaw: {euler_angles[2]}\n{'-' * 50}")
+
+    # slam_type = 'LIO-SAM'
+    slam_type = 'FastLio2'
+
+    if slam_type == 'LIO-SAM':
+        slamPath = '/media/zhao/ZhaoZhibo1T/AllData/CalibrationData/2025_0116/result_assessment/liosam/optimized_odom_tum.txt'  # liosam的路径
+        # liosam中Ti0i1的外参微调下
+        euler_angles[2] += -2.8  # 调整yaw
+        euler_angles[1] += -2.1  # 调整pitch
+        euler_angles[0] += -0.0  # 调整roll
+    elif slam_type == 'FastLio2':
+        slamPath = '/media/zhao/ZhaoZhibo1T/AllData/CalibrationData/2025_0116/result_assessment/fastlio2/tum_traj.txt'  # fastlio2的路径
+        # fastlio2中Ti0i1的外参微调下
+        euler_angles[2] += -1.7  # 调整yaw
+        euler_angles[1] += -1.1  # 调整pitch
+        euler_angles[0] += -0.0  # 调整roll
 
     new_rotation_matrix = R.from_euler('xyz', euler_angles, degrees=True).as_matrix()
     Ti0i1[:3, :3] = new_rotation_matrix
 
     all_data = {}
     ref_xyz = np.array([-2252007.546, 5024414.292, 3208592.422])  # 示例参考坐标 382122.520时间位置的ECEF坐标
-    iePath = '/media/zhao/ZhaoZhibo/AllData/CalibrationData/2025_0116/result_assessment/IE_project_wxb.txt'  # 数据文件路径
+    iePath = '/media/zhao/ZhaoZhibo1T/AllData/CalibrationData/2025_0116/result_assessment/IE_project_wxb.txt'  # 数据文件路径
     # 读取真值，并将真值中的Tni(大惯导 frame to n frame)转换到Tnl(lidar frame to n frame)，
     # Ti0i1为i1到i0的变换矩阵，也就是lidar frame to 大惯导 frame
     groundTruth = loadIE(iePath, all_data, Ti0i1, ref_xyz)
@@ -145,23 +158,22 @@ def main():
         groundTruthTimestamps.append(timestamp)
         groundTruthTnl.append(data['T'])
 
-    # 保存计算结果 激光slam在第某个时刻的位姿，因此需要左乘一个Tnl，将计算结果转换到n系下
-    slamPath = '/media/zhao/ZhaoZhibo/AllData/CalibrationData/2025_0116/result_assessment/optimized_odom_tum.txt'
     SlamResult = dealLioSamResult.main(slamPath)
     slamTimestamps = []
     slamTransforMatrix = []
     specificTnl = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, [config.reference_timestamp])
-    # 获取真值中的最大时间
+    # 获取真值中的最大和最小时间
     max_ground_truth_time = max(groundTruthTimestamps)
+    min_ground_truth_time = min(groundTruthTimestamps)
     # slamTll表示激光slam的位姿是相对于某个时刻的位姿(非初始时刻)，是lidar与lidar之间的变换矩阵
     for timestamp, slamTll in SlamResult:
-        if timestamp <= max_ground_truth_time:
+        if min_ground_truth_time <= timestamp <= max_ground_truth_time:
             slamTimestamps.append(timestamp)
             slamTransforMatrix.append((timestamp, specificTnl[0][1] @ slamTll))
 
     # 因为计算的结果的时间和真值时间不对齐，因此对位置线性内插，姿态四元数内插
     interpolatedGroundTruth = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, slamTimestamps)
-    plotResult.compare_slam_and_ground_truth(slamTransforMatrix, interpolatedGroundTruth)
+    plotResult.compare_slam_and_ground_truth(slamTransforMatrix, interpolatedGroundTruth, slam_type)
     print("-" * 50)
     plotResult.evo_trajectories(slamTransforMatrix, interpolatedGroundTruth)
 

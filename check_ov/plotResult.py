@@ -16,8 +16,8 @@ def extract_euler_angles(matrices):
     rotations = R.from_matrix([matrix[:3, :3] for matrix in matrices])
     return rotations.as_euler('xyz', degrees=True)  # 单位: 度
 
-def plot_translations_and_errors(slam_timestamps, slam_trans, ground_truth_timestamps, ground_truth_trans):
-    errors = slam_trans - ground_truth_trans  # 单位: m
+def plot_translations_and_errors(slam_timestamps, slam_trans, ground_truth_timestamps, ground_truth_trans, slam_type):
+    errors = abs(slam_trans - ground_truth_trans)  # 单位: m
     fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 
     axs[0].plot(slam_timestamps, slam_trans[:, 0], label='SLAM E (m)')
@@ -27,20 +27,20 @@ def plot_translations_and_errors(slam_timestamps, slam_trans, ground_truth_times
     axs[0].plot(ground_truth_timestamps, ground_truth_trans[:, 1], label='Ground Truth N (m)', linestyle='dashed')
     axs[0].plot(ground_truth_timestamps, ground_truth_trans[:, 2], label='Ground Truth U (m)', linestyle='dashed')
     axs[0].legend()
-    axs[0].set_title('Translations')
+    axs[0].set_title(f'Translations ({slam_type})')
     axs[0].set_xlabel('Time (s)')
 
     axs[1].plot(slam_timestamps, errors[:, 0], label='Error E (m)')
     axs[1].plot(slam_timestamps, errors[:, 1], label='Error N (m)')
     axs[1].plot(slam_timestamps, errors[:, 2], label='Error U (m)')
     axs[1].legend()
-    axs[1].set_title('Translation Errors')
+    axs[1].set_title(f'Translation Errors ({slam_type})')
     axs[1].set_xlabel('Time (s)')
 
     plt.tight_layout()
     plt.show()
 
-def plot_euler_angles_and_errors(slam_timestamps, slam_angles, ground_truth_timestamps, ground_truth_angles):
+def plot_euler_angles_and_errors(slam_timestamps, slam_angles, ground_truth_timestamps, ground_truth_angles, slam_type):
     errors = np.abs(slam_angles - ground_truth_angles)  # 单位: 度
     fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 
@@ -51,30 +51,31 @@ def plot_euler_angles_and_errors(slam_timestamps, slam_angles, ground_truth_time
     axs[0].plot(ground_truth_timestamps, ground_truth_angles[:, 1], label='Ground Truth Pitch (°)', linestyle='dashed')
     axs[0].plot(ground_truth_timestamps, ground_truth_angles[:, 2], label='Ground Truth Yaw (°)', linestyle='dashed')
     axs[0].legend()
-    axs[0].set_title('Euler Angles')
+    axs[0].set_title(f'Euler Angles ({slam_type})')
     axs[0].set_xlabel('Time (s)')
 
     axs[1].plot(slam_timestamps, errors[:, 0], label='Error Roll (°)')
     axs[1].plot(slam_timestamps, errors[:, 1], label='Error Pitch (°)')
     axs[1].plot(slam_timestamps, errors[:, 2], label='Error Yaw (°)')
     axs[1].legend()
-    axs[1].set_title('Euler Angle Errors')
+    axs[1].set_title(f'Euler Angle Errors ({slam_type})')
     axs[1].set_xlabel('Time (s)')
 
     plt.tight_layout()
     plt.show()
 
-def plot_2d_trajectory(slam_trans, ground_truth_trans):
+def plot_2d_trajectory(slam_trans, ground_truth_trans, slam_type):
     plt.figure()
     plt.plot(slam_trans[:, 0], slam_trans[:, 1], label='SLAM Trajectory (m)')
     plt.plot(ground_truth_trans[:, 0], ground_truth_trans[:, 1], label='Ground Truth Trajectory (m)', linestyle='dashed')
     plt.legend()
-    plt.title('2D Trajectory (E vs N)')
+    plt.title(f'2D Trajectory (E vs N) ({slam_type})')
     plt.xlabel('E (m)')
     plt.ylabel('N (m)')
+    plt.axis('equal')  # 使横轴和纵轴的刻度一致
     plt.show()
 
-def compare_slam_and_ground_truth(slam_data, ground_truth_data):
+def compare_slam_and_ground_truth(slam_data, ground_truth_data, slam_type):
     slam_timestamps, slam_matrices = extract_timestamps_and_matrices(slam_data)
     ground_truth_timestamps, ground_truth_matrices = extract_timestamps_and_matrices(ground_truth_data)
 
@@ -84,13 +85,13 @@ def compare_slam_and_ground_truth(slam_data, ground_truth_data):
 
     slam_trans = extract_translation(slam_matrices)
     ground_truth_trans = extract_translation(ground_truth_matrices)
-    plot_2d_trajectory(slam_trans, ground_truth_trans)
-    plot_translations_and_errors(slam_timestamps, slam_trans, ground_truth_timestamps, ground_truth_trans)
+    plot_2d_trajectory(slam_trans, ground_truth_trans, slam_type)
+    plot_translations_and_errors(slam_timestamps, slam_trans, ground_truth_timestamps, ground_truth_trans, slam_type)
+    compute_rmse_and_statistics(slam_trans, ground_truth_trans)
 
     slam_angles = extract_euler_angles(slam_matrices)
     ground_truth_angles = extract_euler_angles(ground_truth_matrices)
-    plot_euler_angles_and_errors(slam_timestamps, slam_angles, ground_truth_timestamps, ground_truth_angles)
-
+    plot_euler_angles_and_errors(slam_timestamps, slam_angles, ground_truth_timestamps, ground_truth_angles, slam_type)
 def compute_rmse_and_statistics(slam_trans, ground_truth_trans):
     errors = slam_trans - ground_truth_trans
     squared_errors = errors ** 2
