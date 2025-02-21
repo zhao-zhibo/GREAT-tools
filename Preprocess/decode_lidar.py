@@ -45,24 +45,16 @@ for topic, msg, t in tqdm.tqdm(bag.read_messages()):
     # if gpst>197990: break
     cloud_arr = pointcloud2_to_array_optimized(msg)
 
-    # packed_data = np.empty(len(cloud_arr), dtype=[('x', 'f4'), ('y', 'f4'), 
-    #                                               ('z', 'f4'), ('intensity', 'f4'),
-    #                                               ('ring', 'u2'), ('time', 'f4')])
-    # # 将 cloud_arr 数据按顺序填充到 packed_data
-    # packed_data['x'] = cloud_arr['x']
-    # packed_data['y'] = cloud_arr['y']
-    # packed_data['z'] = cloud_arr['z']
-    # packed_data['intensity'] = cloud_arr['intensity']
-    # packed_data['ring'] = cloud_arr['ring']
-    # packed_data['time'] = cloud_arr['time']
-
-    packed_data = np.empty(len(cloud_arr), dtype=[('x', 'f4'), ('y', 'f4'), 
-                                                  ('z', 'f4'), ('intensity', 'f4')])
+    packed_data = np.empty(len(cloud_arr), dtype=[('x', 'f4'), ('y', 'f4'),
+                                                  ('z', 'f4'), ('intensity', 'f4'),
+                                                  ('ring', 'u2'), ('time', 'f4')])
     # 将 cloud_arr 数据按顺序填充到 packed_data
     packed_data['x'] = cloud_arr['x']
     packed_data['y'] = cloud_arr['y']
     packed_data['z'] = cloud_arr['z']
     packed_data['intensity'] = cloud_arr['intensity']
+    packed_data['ring'] = cloud_arr['ring']
+    packed_data['time'] = cloud_arr['time']
 
     # 直接将 packed_data 写入文件
     with open('lidar_out/%d.bin' % int(round(t.to_sec()*1e9)), 'wb') as fp:
