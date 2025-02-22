@@ -1,7 +1,21 @@
 import tqdm
+import os
+import sys
 
-fp = open('bigimu.txt','rt')
-fp_out = open('bigimu_out.txt','wt')
+# 检查是否提供了路径入参
+if len(sys.argv) < 2:
+    print("Error: No path argument provided!", file=sys.stderr)
+    sys.exit(1)
+# 获取路径入参
+base_path = sys.argv[1]
+
+# 检查并创建目录
+imu_path = os.path.join(base_path, 'AfterPreProcess/IMU/')
+if not os.path.exists(imu_path):
+    os.makedirs(imu_path)
+
+fp = open(os.path.join(base_path, 'bigimu.txt'), 'rt')
+fp_out = open(os.path.join(imu_path, 'Tactical_imu_data.txt'), 'wt')
 lines = fp.readlines()
 for iline in tqdm.tqdm(range(1,len(lines)-1)):
     line =lines[iline].strip().strip()

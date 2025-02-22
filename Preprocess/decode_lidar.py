@@ -6,9 +6,26 @@ import tqdm
 import matplotlib.pyplot as plt
 from sklearn.linear_model import RANSACRegressor
 import open3d as o3d
+import os
+import shutil
+import sys
+
+# 检查是否提供了路径入参
+if len(sys.argv) < 2:
+    print("Error: No path argument provided!", file=sys.stderr)
+    sys.exit(1)
+
+# 获取路径入参
+base_path = sys.argv[1]
+
+# 检查并创建目录
+lidar_data_path = os.path.join(base_path, 'AfterPreProcess/Lidar/data/')
+if not os.path.exists(lidar_data_path):
+    os.makedirs(lidar_data_path)
 
 lineModel = RANSACRegressor()
-dd = np.loadtxt('stamp.log',delimiter=',')
+stamp_log_path = os.path.join(base_path, 'stamp.log')
+dd = np.loadtxt(stamp_log_path, delimiter=',')
 print(dd.shape)
 plt.plot(dd[:,0],dd[:,1]/1e9 - dd[:,0])
 lineModel.fit(dd[:,0].reshape(-1, 1), (dd[:,1]/1e9 - dd[:,0]).reshape(-1, 1))
@@ -35,8 +52,10 @@ def pointcloud2_to_array_optimized(cloud_msg):
     # 使用 NumPy 的 frombuffer 批量读取 PointCloud2 数据
     return np.frombuffer(cloud_msg.data, dtype=np.dtype(dtype_list))
 
-fp_stamp = open('stamp_lidar.txt','wt')
-bag = rosbag.Bag('lidar/lidar-VLP.bag')
+timestamps_path = os.path.join(base_path, 'AfterPreProcess/Lidar/timestamps.txt')
+fp_stamp = open(timestamps_path, 'wt')
+bag_path = os.path.join(base_path, 'lidar/lidar-VLP.bag')
+bag = rosbag.Bag(bag_path)
 for topic, msg, t in tqdm.tqdm(bag.read_messages()):
     gpst = (t.to_sec()-b)/(a1 + 1)
     # if gpst<200100: continue
@@ -57,7 +76,8 @@ for topic, msg, t in tqdm.tqdm(bag.read_messages()):
     packed_data['time'] = cloud_arr['time']
 
     # 直接将 packed_data 写入文件
-    with open('lidar_out/%d.bin' % int(round(t.to_sec()*1e9)), 'wb') as fp:
+    bin_file_path = os.path.join(lidar_data_path, '%d.bin' % int(round(t.to_sec() * 1e9)))
+    with open(bin_file_path, 'wb') as fp:
         fp.write(packed_data.tobytes())
     # fp = open('lidar_out/%d.bin' % int(round(t.to_sec()*1e9)), 'rb')
     # fp = open('/mnt/e/2021_12_22/laser/data/1640186156876742656.bin','rb')
@@ -79,3 +99,4 @@ for topic, msg, t in tqdm.tqdm(bag.read_messages()):
     # o3d.io.write_point_cloud('lidar_pcd/%d.pcd' % int(round(t.to_sec()*1e9)), cloud)
 
     fp_stamp.writelines('%.4f,%d.bin\n' % ( (t.to_sec()-b)/(a1 + 1) ,int(round(t.to_sec()*1e9))))
+fp_stamp.close()

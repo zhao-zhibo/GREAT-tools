@@ -1,10 +1,26 @@
 import math
 import tqdm
+import os
+import sys
 
+# 检查是否提供了路径入参
+if len(sys.argv) < 2:
+    print("Error: No path argument provided!", file=sys.stderr)
+    sys.exit(1)
 
-fp = open('imu_adis.txt','rt')
-fp_out = open('smallimu_out.txt','wt')
-fp_csv_out = open('imu0.csv','wt')
+# 获取路径入参
+base_path = sys.argv[1]
+
+# 检查并创建目录
+imu_path = os.path.join(base_path, 'AfterPreProcess/IMU/')
+if not os.path.exists(imu_path):
+    os.makedirs(imu_path)
+
+# 打开文件
+fp = open(os.path.join(base_path, 'imu_adis.txt'), 'rt')
+fp_out = open(os.path.join(imu_path, 'MEMS_imu_data.txt'), 'wt')
+fp_csv_out = open(os.path.join(imu_path, 'imu0.csv'), 'wt')
+
 lines = fp.readlines()
 for iline in tqdm.tqdm(range(1,len(lines)-1)):
     line = lines[iline].strip()
