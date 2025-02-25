@@ -254,7 +254,7 @@ if __name__ == "__main__":
     compression = rosbag.Compression.NONE
 
     cameras = [
-        # (0, 'camera_gray_left', '/img0_raw'),
+        (0, 'camera_gray_left', '/img0_raw'),
         (1, 'camera_gray_right', '/img1_raw')
     ]
 
@@ -276,7 +276,7 @@ if __name__ == "__main__":
             print('Dataset is empty? Exiting.')
             sys.exit(1)
 
-        out_path = os.path.join(whu.data_path , args.name + "mems_all.bag")
+        out_path = os.path.join(whu.data_path , args.name + "_mems.bag")
         bag = rosbag.Bag(out_path, 'w', compression=compression)
         try:
             # IMU
@@ -293,7 +293,7 @@ if __name__ == "__main__":
             for camera in cameras:
                 save_camera_data(bag, args.whu_type, whu, bridge, camera=camera[0], camera_frame_id=camera[1], topic=camera[2], initial_time=None)
             save_velo_data(bag, whu, velo_frame_id, velo_topic)
-            save_gps_fix_data(bag, whu, gps_frame_id, gps_fix_topic)
+            # save_gps_fix_data(bag, whu, gps_frame_id, gps_fix_topic)
 
         finally:
             print("## OVERVIEW ##")
