@@ -1,28 +1,34 @@
 # GREAT DATASET
 
+操作的命令：
+1. 先将数据预处理一下，使用Preprocess文件夹中的`preProcess.py`文件，然后将common_path中的路径进行修改，直接运行py文件即可，生成的文件会保存到数据目录中的AfterPreProcess文件夹中。
+
+2. 实车采集时的命令接口：运行rawdata2bag.py文件，入参为：` raw_synced /media/***/data_2025220163953/  -n AfterPreProces`
+注：GREAT运行时的命令入参：转格式的py文件入参：`raw_synced /media/**  -n suburb-02`
+
 ## Table of Contents
 1. Introduction  
  &ensp;* Abstract  
  &ensp;* Main Contributions  
-转格式的py文件入参：`raw_synced /media/**  -n suburb-02`
-2. Lisence  
 
-3. Sensor Setup  
+3. Lisence  
+
+4. Sensor Setup  
  &ensp;* Acquisition Platform  
  &ensp;* Sensor Description  
 
-4. Comparison with other datasets  
+5. Comparison with other datasets  
 
-5. Environments  
+6. Environments  
 
-6. Dataset Sequences  
+7. Dataset Sequences  
  &ensp;* Data Download  
 
-7. Reference Solution  
+8. Reference Solution  
 
-8. Work Dictionary  
+9. Work Dictionary  
 
-9. Development Toolkits  
+10. Development Toolkits  
 
 
 ## Introduction
