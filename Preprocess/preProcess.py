@@ -2,7 +2,7 @@ import subprocess
 import os
 
 # 定义公共路径入参
-common_path = '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953' + '/'
+common_path = '/media/zhao/ZhaoZhibo1T/AllData/Calibration_0301/data_20253117310' + '/'
 
 # 检查并创建目录
 after_preprocess_path = os.path.join(common_path, 'AfterPreProcess/')

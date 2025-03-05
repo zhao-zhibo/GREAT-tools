@@ -114,7 +114,7 @@ def interpolate_SE3(timeGroudTruth, SE3GroudTruth, timeCalc):
     return interp_results
 
 def main():
-    # 原始变换矩阵
+    # 原始变换矩阵 lidar frame to 大惯导 frame
     Ti0i1 = np.array([
         [0.9997326730750637, -0.02272959144087399, -0.004274982985153601, 0.03],
         [0.022705545174019435, 0.9997263893640309, -0.0055991346006956004, 0.48],
@@ -148,7 +148,7 @@ def main():
     ref_xyz = np.array([-2252007.546, 5024414.292, 3208592.422])  # 示例参考坐标 382122.520时间位置的ECEF坐标
     iePath = '/media/zhao/ZhaoZhibo1T/AllData/CalibrationData/2025_0116/result_assessment/IE_project_wxb.txt'  # 数据文件路径
     # 读取真值，并将真值中的Tni(大惯导 frame to n frame)转换到Tnl(lidar frame to n frame)，
-    # Ti0i1为i1到i0的变换矩阵，也就是lidar frame to 大惯导 frame
+    # Ti0i1为i1到i0的变换矩阵，也就是lidar frame to 大惯导 frame，最终返回的是lidar frame to n frame的变换矩阵
     groundTruth = loadIE(iePath, all_data, Ti0i1, ref_xyz)
 
     # 保存真值结果
@@ -161,6 +161,7 @@ def main():
     SlamResult = dealLioSamResult.main(slamPath)
     slamTimestamps = []
     slamTransforMatrix = []
+    # 从真值文件中拿到一个时刻的高精度位姿
     specificTnl = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, [config.reference_timestamp])
     # 获取真值中的最大和最小时间
     max_ground_truth_time = max(groundTruthTimestamps)
