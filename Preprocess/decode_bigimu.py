@@ -9,8 +9,11 @@ if len(sys.argv) < 2:
 # 获取路径入参
 base_path = sys.argv[1]
 
-# 检查并创建目录
-imu_path = os.path.join(base_path, 'AfterPreProcess/IMU/')
+# 检查并创建目录，根据操作系统选择路径分隔符
+if os.name == 'nt':  # Windows
+    imu_path = os.path.join(base_path, 'AfterPreProcess\\IMU\\')
+else:  # Ubuntu
+    imu_path = os.path.join(base_path, 'AfterPreProcess/IMU/')
 if not os.path.exists(imu_path):
     os.makedirs(imu_path)
 
