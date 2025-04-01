@@ -6,6 +6,8 @@ import math
 from scipy.spatial.transform import Rotation as R, Slerp
 import geoFunc.trans as trans
 import plotResult
+import matplotlib.pyplot as plt
+import numpy as np
 
 def loadIE(path : str, all_data : dict, Ti0i1 : np.ndarray, ref_xyz : np.ndarray = None):
     fp = open(path,'rt')
@@ -113,6 +115,91 @@ def interpolate_SE3(timeGroudTruth, SE3GroudTruth, timeCalc):
 
     return interp_results
 
+def calculate_errors(slam_data, ground_truth_data):
+    position_errors = []
+    orientation_errors = []
+    for (slam_time, slam_pose), (gt_time, gt_pose) in zip(slam_data, ground_truth_data):
+        position_error = np.linalg.norm(slam_pose[:3, 3] - gt_pose[:3, 3])
+        orientation_error = R.from_matrix(slam_pose[:3, :3]).inv() * R.from_matrix(gt_pose[:3, :3])
+        euler_error = orientation_error.as_euler('xyz', degrees=True)
+        position_errors.append((slam_time, position_error))
+        orientation_errors.append((slam_time, euler_error))
+    return position_errors, orientation_errors
+
+def calculate_enu_and_euler_errors(slam_data, ground_truth_data):
+    enu_errors = []
+    euler_errors = []
+    for (slam_time, slam_pose), (gt_time, gt_pose) in zip(slam_data, ground_truth_data):
+        enu_error = slam_pose[:3, 3] - gt_pose[:3, 3]
+        enu_errors.append((slam_time, enu_error))
+
+        orientation_error = R.from_matrix(slam_pose[:3, :3]).inv() * R.from_matrix(gt_pose[:3, :3])
+        euler_error = orientation_error.as_euler('xyz', degrees=True)
+        euler_errors.append((slam_time, euler_error))
+    return enu_errors, euler_errors
+
+def plot_enu_and_euler_errors(all_enu_errors, all_euler_errors):
+    # 设置全局参数
+    plt.rcdefaults()  # 避免历史配置干扰
+    plt.rcParams.update({
+        'legend.fontsize': 14,  # 图例字体大小
+        'axes.labelsize': 16,   # 坐标轴标签字体大小
+        'axes.titlesize': 18,   # 标题字体大小
+        'xtick.labelsize': 14,  # x轴刻度字体大小
+        'ytick.labelsize': 14,  # y轴刻度字体大小
+        'lines.linewidth': 2,   # 线条宽度
+        'font.family': 'DejaVu Sans',          # 改用通用字体
+        'font.sans-serif': ['DejaVu Sans'],    # 明确指定备选字体
+    })
+
+    # Plot ENU errors
+    fig, axs = plt.subplots(3, 1, figsize=(15, 15))
+    for slam_type, enu_errors in all_enu_errors.items():
+        timestamps = [item[0] for item in enu_errors]
+        errors = np.array([item[1] for item in enu_errors])
+
+        axs[0].plot(timestamps, errors[:, 0], label=f'{slam_type} - East Error')
+        axs[1].plot(timestamps, errors[:, 1], label=f'{slam_type} - North Error')
+        axs[2].plot(timestamps, errors[:, 2], label=f'{slam_type} - Up Error')
+
+    for ax in axs:
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Error (m)')
+        ax.legend()
+        ax.tick_params(axis='both', which='major')
+        ax.tick_params(axis='both', which='minor')
+
+    axs[0].set_title('East Error')
+    axs[1].set_title('North Error')
+    axs[2].set_title('Up Error')
+
+    plt.tight_layout()
+    plt.show()
+
+    # Plot Euler angle errors
+    fig, axs = plt.subplots(3, 1, figsize=(15, 15))
+    for slam_type, euler_errors in all_euler_errors.items():
+        timestamps = [item[0] for item in euler_errors]
+        errors = np.array([item[1] for item in euler_errors])
+
+        axs[0].plot(timestamps, errors[:, 0], label=f'{slam_type} - Roll Error')
+        axs[1].plot(timestamps, errors[:, 1], label=f'{slam_type} - Pitch Error')
+        axs[2].plot(timestamps, errors[:, 2], label=f'{slam_type} - Yaw Error')
+
+    for ax in axs:
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Error (°)')
+        ax.legend()
+        ax.tick_params(axis='both', which='major')
+        ax.tick_params(axis='both', which='minor')
+
+    axs[0].set_title('Roll Error')
+    axs[1].set_title('Pitch Error')
+    axs[2].set_title('Yaw Error')
+
+    plt.tight_layout()
+    plt.show()
+
 def main():
     # 原始变换矩阵 lidar frame to 大惯导 frame
     Ti0i1 = np.array([
@@ -124,67 +211,59 @@ def main():
     rotation_matrix = Ti0i1[:3, :3]
     euler_angles = R.from_matrix(rotation_matrix).as_euler('xyz', degrees=True)
     print(f"Roll: {euler_angles[0]}, Pitch: {euler_angles[1]}, Yaw: {euler_angles[2]}\n{'-' * 50}")
-
-    # slam_type = 'LIO-SAM'
-    slam_type = 'Add RoadSide LiDAR with LIO-SAM All track'
-
-    if 'LIO-SAM' in slam_type:
-        # slamPath = '/media/zhao/ZhaoZhibo1T/AllData/CalibrationData/2025_0116/result_assessment/liosam/optimized_odom_tum.txt'  # 1.16日采集的数据的的计算结果
-        slamPath = '/home/zhao/Data/roadSide_poses_1743154350.828975.txt'  # 2.20日采集的第一次观测数据的的计算结果
-        # liosam中Ti0i1的外参微调下
-        euler_angles[2] += -2.8  # 调整yaw
-        euler_angles[1] += -2.0  # 调整pitch
-        euler_angles[0] += -0.0  # 调整roll
-    elif 'FastLio2' in slam_type:
-        slamPath = '/media/zhao/ZhaoZhibo1T/AllData/CalibrationData/2025_0116/result_assessment/fastlio2/tum_traj.txt'  # fastlio2的路径
-        # fastlio2中Ti0i1的外参微调下
-        euler_angles[2] += -1.7  # 调整yaw
-        euler_angles[1] += -1.1  # 调整pitch
-        euler_angles[0] += -0.0  # 调整roll
+    euler_angles[2] += -2.8  # 调整yaw
+    euler_angles[1] += -2.0  # 调整pitch
+    euler_angles[0] += -0.0  # 调整roll
 
     new_rotation_matrix = R.from_euler('xyz', euler_angles, degrees=True).as_matrix()
     Ti0i1[:3, :3] = new_rotation_matrix
-   #  打印Ti0i1矩阵
     print(f"Ti0i1:\n{Ti0i1}\n{'-' * 50}")
+    # 加入路侧前后的对比结果
+    # slam_types = ['LIO-SAM Adding RoadSide Lidar', 'LIO-SAM without RoadSide Lidar']
+    # slam_paths = [
+    #     '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_vehicle_road_0327_2237/optimized_odom_tum.txt',
+    #     '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/gps_vehicle_0327/optimized_odom_tum.txt'
+    # ]
+
+    slam_types = ['Initiate Transform', 'registration Transform']
+    slam_paths = [
+        '/home/zhao/Data/roadSide_poses_1743237468.514390.txt',
+        '/home/zhao/Data/init_vehicle_pose_1743237468.514460.txt'
+    ]
 
     all_data = {}
-    ref_xyz = np.array([-2252398.056, 5024382.607, 3208376.765])  # slam轨迹的原点对应的位置坐标
-    # iePath = '/media/zhao/ZhaoZhibo1T/AllData/CalibrationData/2025_0116/result_assessment/IE_project_wxb.txt'  # 1.16日采集的数据
+    ref_xyz = np.array([-2252398.030, 5024382.629, 3208376.785])  # slam轨迹的原点对应的位置坐标,已经将纬度经度高程转换为WGS84的三维坐标
     iePath = '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Reference/IE.txt'  # 2.20日采集的第一次观测结果
-    # 读取真值，并将真值中的Tni(大惯导 frame to n frame)转换到Tnl(lidar frame to n frame)，
-    # Ti0i1为i1到i0的变换矩阵，也就是lidar frame to 大惯导 frame，最终返回的是lidar frame to n frame的变换矩阵
     groundTruth = loadIE(iePath, all_data, Ti0i1, ref_xyz)
 
-    # 保存真值结果
     groundTruthTimestamps = []
     groundTruthTnl = []
     for timestamp, data in groundTruth.items():
         groundTruthTimestamps.append(timestamp)
         groundTruthTnl.append(data['T'])
 
-    SlamResult = dealLioSamResult.main(slamPath, config.slam_in_absolute_n_frame)
-    slamTimestamps = []
-    slamTransforMatrix = []
-    # 从真值文件中拿到一个时刻的高精度位姿
-    if not config.slam_in_absolute_n_frame:
-        specificTnl = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, [config.reference_timestamp])
-    # 获取真值中的最大和最小时间
-    max_ground_truth_time = max(groundTruthTimestamps)
-    min_ground_truth_time = min(groundTruthTimestamps)
-    # slamTll表示激光slam的位姿是相对于某个时刻的位姿(非初始时刻)，是lidar与lidar之间的变换矩阵
-    for timestamp, slamTll in SlamResult:
-        if min_ground_truth_time <= timestamp <= max_ground_truth_time:
-            slamTimestamps.append(timestamp)
-            if config.slam_in_absolute_n_frame:
-                slamTransforMatrix.append((timestamp, slamTll))
-            else:
-                slamTransforMatrix.append((timestamp, specificTnl[0][1] @ slamTll))
+    all_enu_errors = {}
+    all_euler_errors = {}
+    for slam_type, slam_path in zip(slam_types, slam_paths):
+        SlamResult = dealLioSamResult.main(slam_path, config.slam_in_absolute_n_frame)
+        slamTimestamps = []
+        slamTransforMatrix = []
+        max_ground_truth_time = max(groundTruthTimestamps)
+        min_ground_truth_time = min(groundTruthTimestamps)
+        for timestamp, slamTll in SlamResult:
+            if min_ground_truth_time <= timestamp <= max_ground_truth_time:
+                slamTimestamps.append(timestamp)
+                if config.slam_in_absolute_n_frame:
+                    slamTransforMatrix.append((timestamp, slamTll))
 
-    # 因为计算的结果的时间和真值时间不对齐，因此对位置线性内插，姿态四元数内插
-    interpolatedGroundTruth = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, slamTimestamps)
-    plotResult.compare_slam_and_ground_truth(slamTransforMatrix, interpolatedGroundTruth, slam_type)
-    print("-" * 50)
-    plotResult.evo_trajectories(slamTransforMatrix, interpolatedGroundTruth)
+        interpolatedGroundTruth = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, slamTimestamps)
+        enu_errors, euler_errors = calculate_enu_and_euler_errors(slamTransforMatrix, interpolatedGroundTruth)
+        all_enu_errors[slam_type] = enu_errors
+        all_euler_errors[slam_type] = euler_errors
+
+    plot_enu_and_euler_errors(all_enu_errors, all_euler_errors)
+    print("当前字体:", plt.rcParams['font.family'])
+
 
 if __name__ == "__main__":
-        main()
+    main()

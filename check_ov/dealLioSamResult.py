@@ -25,6 +25,13 @@ def create_transformation_matrix(position, quaternion):
     transformation_matrix[:3, 3] = position
     return transformation_matrix
 
+def processTumNframe(data):
+    transformed_data = []
+    for timestamp, position, quaternion in data:
+        transformation_matrix = create_transformation_matrix(position, quaternion)
+        transformed_data.append((timestamp, transformation_matrix))
+    return transformed_data
+
 def process_tum_data(data, reference_timestamp):
     reference_matrix = None
     for timestamp, position, quaternion in data:
@@ -43,10 +50,15 @@ def process_tum_data(data, reference_timestamp):
 
     return transformed_data
 
-def main(file_path):
+def main(file_path, isNframe = False):
     data = read_tum_file(file_path)
     # 选择一个时刻作为参考，然后将所有位姿转换到参考坐标系下，因为这个时刻对应的真值的位姿比较准确，因此选择这个时刻作为参考
-    return process_tum_data(data, config.reference_timestamp)
+    if isNframe:
+        # 如果传入的是True，执行另���个函数
+        return processTumNframe(data)
+    else:
+        # 如果传入的是False，执行当前的process函数
+        return process_tum_data(data, config.reference_timestamp)
 
 if __name__ == "__main__":
     main()
