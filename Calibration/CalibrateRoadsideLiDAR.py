@@ -2,10 +2,17 @@ import os
 import pandas as pd
 import numpy as np
 
+# 根据操作系统设置基础路径
+if os.name == 'nt':  # Windows
+    base_path = r"H:\AllData\tunnelRoadside\HDMap"
+else:  # Ubuntu
+    base_path = "/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/HDMap"
+
+
 # 配置参数
 CONFIG = {
-    "base_path": r"H:\AllData\tunnelRoadside\HDMap",
-    "enu_file": "90m_180m_ENU.txt",
+    "base_path": base_path,
+    "enu_file": "90m_180m_UTM.txt",
     "lidar_file": "90m_180m_LiDAR.txt",
     "origin_subtract": (513500, 3364400, 0),  # ENU坐标系平移量
     "target_prefixes": ["180_", "90_"],  # 待标定的LiDAR前缀

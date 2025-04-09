@@ -224,14 +224,18 @@ def main():
     #     '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_vehicle_road_0327_2237/optimized_odom_tum.txt',
     #     '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/gps_vehicle_0327/optimized_odom_tum.txt'
     # ]
-    # 配准前后的路侧lidar和车载lidar的对比结果
-    slam_types = ['Initial_T_Road_Vehicle', 'registration_T_Road_Vehicle']
+
+    # 最终因子图融合后的结果，加入路侧融合前后最终的因子图优化后的对比结果
+    slam_types = ['LiDAR-IMU-Roadside_GN', 'LiDAR-IMU-Roadside_LM']
     slam_paths = [
-        '/home/zhao/Data/tunnelData/data_2025220163953/OutputFile/initialT_RoadVehicle_File.txt',
-        '/home/zhao/Data/tunnelData/data_2025220163953/OutputFile/registrationT_RoadVehicle_File.txt'
+        # '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/gps_vehicle_0407/optimized_odom_tum.txt',
+        '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_vehicle_road_0408_GN/optimized_odom_tum.txt',
+        '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_vehicle_road_0408_LM/optimized_odom_tum.txt'
     ]
 
     all_data = {}
+    # slam的原点为：30.3965858919968 114.146383022026 11.1162951593667
+    # Slam原点转换为wgs84坐标为： -2252398.030 5024382.629 3208376.785
     ref_xyz = np.array([-2252398.030, 5024382.629, 3208376.785])  # slam轨迹的原点对应的位置坐标,已经将纬度经度高程转换为WGS84的三维坐标
     iePath = '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Reference/IE.txt'  # 2.20日采集的第一次观测结果
     groundTruth = loadIE(iePath, all_data, Ti0i1, ref_xyz)
@@ -251,26 +255,12 @@ def main():
         max_ground_truth_time = max(groundTruthTimestamps)
         min_ground_truth_time = min(groundTruthTimestamps)
         for timestamp, slamTll in SlamResult:
-            if min_ground_truth_time <= timestamp <= max_ground_truth_time:
+            if min_ground_truth_time <= timestamp <= max_ground_truth_time and timestamp >= 377613.4:
                 slamTimestamps.append(timestamp)
                 if config.slam_in_absolute_n_frame:
                     slamTransforMatrix.append((timestamp, slamTll))
 
         interpolatedGroundTruth = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, slamTimestamps)
-
-        # 检查config.isT_Road_Vehicle是否为true
-        if config.isT_Road_Vehicle:
-            # 定义要左乘的4x4矩阵
-            T_GNSSN_Road = np.array([
-                [-0.990361,  0.0960783, -0.0997733, -516.844],
-                [-0.0819912, -0.987201, -0.136789,   348.502],
-                [-0.111639,  -0.12729,   0.985562,   -6.96899],
-                [0,          0,          0,          1]
-            ])
-            T_Road_GNSSN = np.linalg.inv(T_GNSSN_Road)
-            for i, (timestamp, matrix) in enumerate(interpolatedGroundTruth):
-                # 左乘指定的4x4矩阵, 最终计算出来的是T_Road_Vehicle的真值
-                interpolatedGroundTruth[i] = (timestamp, np.dot(T_Road_GNSSN, matrix))
         enu_errors, euler_errors = calculate_enu_and_euler_errors(slamTransforMatrix, interpolatedGroundTruth)
         all_enu_errors[slam_type] = enu_errors
         all_euler_errors[slam_type] = euler_errors

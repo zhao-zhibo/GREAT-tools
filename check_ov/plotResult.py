@@ -29,6 +29,7 @@ def plot_translations_and_errors(slam_timestamps, slam_trans, ground_truth_times
     axs[0].legend()
     axs[0].set_title(f'Translations ({slam_type})')
     axs[0].set_xlabel('Time (s)')
+    axs[0].grid(True, linestyle='--', alpha=0.5)  # 设置网格为虚线，透明度降低
 
     axs[1].plot(slam_timestamps, errors[:, 0], label='Error E (m)')
     axs[1].plot(slam_timestamps, errors[:, 1], label='Error N (m)')
@@ -36,6 +37,7 @@ def plot_translations_and_errors(slam_timestamps, slam_trans, ground_truth_times
     axs[1].legend()
     axs[1].set_title(f'Translation Errors ({slam_type})')
     axs[1].set_xlabel('Time (s)')
+    axs[1].grid(True, linestyle='--', alpha=0.5)  # 设置网格为虚线，透明度降低
 
     plt.tight_layout()
     plt.show()
@@ -53,6 +55,7 @@ def plot_euler_angles_and_errors(slam_timestamps, slam_angles, ground_truth_time
     axs[0].legend()
     axs[0].set_title(f'Euler Angles ({slam_type})')
     axs[0].set_xlabel('Time (s)')
+    axs[0].grid(True, linestyle='--', alpha=0.5)  # 设置网格为虚线，透明度降低
 
     axs[1].plot(slam_timestamps, errors[:, 0], label='Error Roll (°)')
     axs[1].plot(slam_timestamps, errors[:, 1], label='Error Pitch (°)')
@@ -60,6 +63,7 @@ def plot_euler_angles_and_errors(slam_timestamps, slam_angles, ground_truth_time
     axs[1].legend()
     axs[1].set_title(f'Euler Angle Errors ({slam_type})')
     axs[1].set_xlabel('Time (s)')
+    axs[1].grid(True, linestyle='--', alpha=0.5)  # 设置网格为虚线，透明度降低
 
     plt.tight_layout()
     plt.show()
@@ -73,6 +77,8 @@ def plot_2d_trajectory(slam_trans, ground_truth_trans, slam_type):
     plt.xlabel('E (m)')
     plt.ylabel('N (m)')
     plt.axis('equal')  # 使横轴和纵轴的刻度一致
+    plt.grid(True, linestyle='--', alpha=0.5)  # 设置全局网格为虚线，透明度降低
+
     plt.show()
 
 def compare_slam_and_ground_truth(slam_data, ground_truth_data, slam_type):
@@ -85,7 +91,7 @@ def compare_slam_and_ground_truth(slam_data, ground_truth_data, slam_type):
 
     slam_trans = extract_translation(slam_matrices)
     ground_truth_trans = extract_translation(ground_truth_matrices)
-    # plot_2d_trajectory(slam_trans, ground_truth_trans, slam_type)
+    plot_2d_trajectory(slam_trans, ground_truth_trans, slam_type)
     plot_translations_and_errors(slam_timestamps, slam_trans, ground_truth_timestamps, ground_truth_trans, slam_type)
     compute_rmse_and_statistics(slam_trans, ground_truth_trans)
 

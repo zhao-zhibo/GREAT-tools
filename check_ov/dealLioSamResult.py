@@ -54,7 +54,7 @@ def main(file_path, isNframe = False):
     data = read_tum_file(file_path)
     # 选择一个时刻作为参考，然后将所有位姿转换到参考坐标系下，因为这个时刻对应的真值的位姿比较准确，因此选择这个时刻作为参考
     if isNframe:
-        # 如果传入的是True，执行另���个函数
+        # 如果传入的是True，执行processTumNframe函数
         return processTumNframe(data)
     else:
         # 如果传入的是False，执行当前的process函数
