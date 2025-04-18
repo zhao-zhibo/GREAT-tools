@@ -166,7 +166,7 @@ def main():
     # 这里设置为True，就是直接取出来对应的位姿，
     SlamResult = dealLioSamResult.main(slamPath, True)
     slamTimestamps = []
-    slamTransforMatrix = []
+    slamTransforMatrix = [] # 这个变量是slam的变化的lidar坐标系相对于n系的变换矩阵
     # 从真值文件中拿到一个时刻的高精度位姿,此时的slam位姿均在局部坐标系下，而不是n系下
     specificTnl = interpolate_SE3(groundTruthTimestamps, groundTruthTnl, [config.reference_timestamp])
     # 获取真值中的最大和最小时间
