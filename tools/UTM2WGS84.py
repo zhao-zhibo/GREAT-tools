@@ -47,7 +47,8 @@ print(f"转换后的ECEF XYZ坐标:\n  X = {x_pyproj:.3f}米\n  Y = {y_pyproj:.3
 
 # 使用pyproj将经纬度（单位：度）转为ECEF XYZ（单位：米）
 x_pyproj, y_pyproj, z_pyproj = wgs84_geocentric.transform(
-    114.146383022026, 30.3965858919968, 11.1162952403245,
+    # 114.146383022026, 30.3965858919968, 11.1162952403245, # 490秒开始的bag包起点对应的原点经纬度
+    114.14521846596, 30.3974618860168, 10.5882026274912, # 690秒开始的bag包起点对应的原点经纬度
     radians=False  # 输入为度数，非弧度
 )
 print(f"转换后的原点ECEF XYZ坐标:\n  X = {x_pyproj:.3f}米\n  Y = {y_pyproj:.3f}米\n  Z = {z_pyproj:.3f}米")

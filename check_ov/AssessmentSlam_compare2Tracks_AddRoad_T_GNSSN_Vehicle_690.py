@@ -225,18 +225,21 @@ def main():
     #     '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/gps_vehicle_0327/optimized_odom_tum.txt'
     # ]
 
-    # 最终因子图融合后的结果，加入路侧融合前后最终的因子图优化后的对比结果
-    slam_types = ['LiDAR-IMU-Roadside_GN', 'LiDAR-IMU-Roadside_LM']
+    # 最终因子图融合后的结果，加入路侧融合前后最终的因子图优化后的对比结果 下面三个变量都包含'LiDAR-IMU-Roadside_'
+    slam_types = ['SmallGicp_GN','GN_Probability_StaticCov', 'GN_Probability_DynamicCov']
     slam_paths = [
         # '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/gps_vehicle_0407/optimized_odom_tum.txt',
-        '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_vehicle_road_0408_GN/optimized_odom_tum.txt',
-        '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_vehicle_road_0408_LM/optimized_odom_tum.txt'
+        '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_Vehicle_Road_0515_GN/optimized_odom_tum.txt',
+        '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_Vehicle_Road_0515_GNPro_StaticCov_690/optimized_odom_tum.txt',
+        # 下面是硬盘中的路径，使用最新的台式机系统中的算出来的文件内容
+        '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Vehicle_IMU_LIOSAM/GNSS_Vehicle_Road_0515_GNPro_DynamicCov_690/optimized_odom_tum.txt'
     ]
 
     all_data = {}
-    # slam的原点为：30.3965858919968 114.146383022026 11.1162951593667
-    # Slam原点转换为wgs84坐标为： -2252398.030 5024382.629 3208376.785
-    ref_xyz = np.array([-2252398.030, 5024382.629, 3208376.785])  # slam轨迹的原点对应的位置坐标,已经将纬度经度高程转换为WGS84的三维坐标
+    # 根据slam的原点坐标，将真值转换到slam的原点坐标系下
+    # slam的原点为：30.3974618860168 114.14521846596 10.5882026274912
+    # Slam原点转换为wgs84坐标为： -2252275.622, 5024383.154, 3208460.280
+    ref_xyz = np.array([-2252275.622, 5024383.154, 3208460.280])  # slam轨迹的原点对应的位置坐标,已经将纬度经度高程转换为WGS84的三维坐标
     iePath = '/media/zhao/ZhaoZhibo1T/AllData/tunnelRoadside/data_2025220163953/Result/Reference/IE.txt'  # 2.20日采集的第一次观测结果
     groundTruth = loadIE(iePath, all_data, Ti0i1, ref_xyz)
 
